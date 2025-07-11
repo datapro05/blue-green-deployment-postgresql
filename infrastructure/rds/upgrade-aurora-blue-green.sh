@@ -5,7 +5,7 @@ SOURCE_CLUSTER="acme-datahub-staging"
 DATESTAMP=$(date +%Y%m%d%H%M)
 SNAPSHOT_NAME="acme-datahub-cluster-snapshot-before-upgrade-$DATESTAMP"
 BLUE_CLUSTER="acme-datahub-staging-blue"
-NEW_VERSION="17.5"
+TARGET_ENGINE_VERSION="17.5"
 ENGINE="aurora-postgresql"
 ENGINE_MODE="provisioned"
 
@@ -25,7 +25,6 @@ aws rds restore-db-cluster-from-snapshot \
   --db-cluster-identifier "$BLUE_CLUSTER" \
   --snapshot-identifier "$SNAPSHOT_NAME" \
   --engine "$ENGINE" \
-  --engine-version "$NEW_VERSION" \
   --engine-mode "$ENGINE_MODE" \
   --serverless-v2-scaling-configuration MinCapacity=0.5,MaxCapacity=128
 
@@ -33,4 +32,14 @@ echo "==> Waiting for cluster '$BLUE_CLUSTER' to become available..."
 aws rds wait db-cluster-available \
   --db-cluster-identifier "$BLUE_CLUSTER"
 
-echo "New cluster '$BLUE_CLUSTER' is now available and running PostgreSQL $NEW_VERSION"
+echo "cluster '$BLUE_CLUSTER' is now available and running..."
+
+echo "==> Upgrading cluster '$BLUE_CLUSTER' to PostgreSQL $TARGET_ENGINE_VERSION..."
+aws rds modify-db-cluster \
+  --db-cluster-identifier "$BLUE_CLUSTER" \
+  --engine-version "$TARGET_ENGINE_VERSION" \
+  --allow-major-version-upgrade \
+  --apply-immediately
+
+
+echo "Upgrade complete. Cluster '$BLUE_CLUSTER' is now running PostgreSQL $TARGET_ENGINE_VERSION"
