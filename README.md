@@ -5,7 +5,7 @@ This script performs a blue-green upgrade of the `acme-datahub-staging` Aurora P
 ## Steps
 1. Takes a snapshot of the current cluster
 2. Restores a new cluster (`acme-datahub-staging-blue`) from the snapshot
-3. Upgrades the engine version during restore
+3. Upgrades the engine version after restore
 4. Waits for the new cluster to be available
 
 ## Requirements
